@@ -1,19 +1,21 @@
 from aiogram import executor
 from src import handlers
-from src.bot import dp, loop, bot
+from src.bot import dp, loop, bot, storage
 from aiogram.types import BotCommand
 
 handlers.register_handler(dp)
 
 
 async def on_finish_up(_):
-    print("Bot Done")
+    await storage.close()
+    await storage.wait_closed()
+    print("Bot Shutdown")
 
 
 async def setup_bot_commands(_):
     print("Bot Enable")
     cmds = [
-        BotCommand(command="/reload", description="Enable Bot"),
+        BotCommand(command="/reload", description="Перезагрузить 🔄"),
     ]
     await bot.set_my_commands(cmds)
 

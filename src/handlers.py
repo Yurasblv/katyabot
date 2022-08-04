@@ -15,9 +15,9 @@ async def zero_handler(message: types.Message, state: FSMContext):
     await Person.ACCEPT.set()
     await bot.send_message(
         message.from_user.id,
-        text="""Привет🥰Рада,что ты решила изменить свою жизнь вместе со мной!❤\n️
-                                Я составлю тебе программу на месяц, которая поможет тебе прийти к цели 🎯\n 
-                                Для того,чтобы составить план действий , заполни пожалуйста анкету❤""",
+        text="Привет🥰Рада,что ты решила изменить свою жизнь вместе со мной!❤\n"
+             "Я составлю тебе программу на месяц, которая поможет тебе прийти к цели 🎯\n"
+             "Для того,чтобы составить план действий , заполни пожалуйста анкету❤",
         reply_markup=kb1,
     )
 
@@ -34,9 +34,12 @@ async def start_handler(callback_query: types.CallbackQuery, state: FSMContext):
 
 async def name_handler(message: types.Message, state: FSMContext):
     logger.info(message.text)
+    print(message.from_user.id)
     async with state.proxy() as data:
         data["PERSON_CREDS"] = message.text
+        print(data)
     await Person.next()
+    print(await state.get_state())
     await bot.send_message(message.from_user.id, text="Возраст\n(число)")
 
 
@@ -86,9 +89,8 @@ async def weight_handler(message: types.Message, state: FSMContext):
         "Поддержание формы", callback_data="Поддержание формы"
     )
     inline_btn_3 = InlineKeyboardButton("Набор массы", callback_data="Набор массы")
-    inline_kb1 = InlineKeyboardMarkup(row_width=2).row(
-        inline_btn_1, inline_btn_2, inline_btn_3
-    )
+    inline_kb1 = InlineKeyboardMarkup().add(
+        inline_btn_1).add(inline_btn_2).add(inline_btn_3)
     await bot.send_message(
         message.chat.id, text="Какой план тренировок?", reply_markup=inline_kb1
     )
@@ -106,8 +108,8 @@ async def goal_handler(callback_query: types.CallbackQuery, state: FSMContext):
     await Person.next()
     inline_btn_1 = InlineKeyboardButton("🏟️ Зал", callback_data="Зал")
     inline_btn_2 = InlineKeyboardButton("🏠 Дома", callback_data="Дома")
-    inline_kb1 = InlineKeyboardMarkup(row_width=2).row(inline_btn_1, inline_btn_2)
-    await bot.send_message(callback_query.from_user.id, text=f"{data['GOAL']} ✅")
+    inline_kb1 = InlineKeyboardMarkup(row_width=3).row(inline_btn_1, inline_btn_2)
+    await bot.send_message(callback_query.from_user.id, text=f"{data['GOAL']}")
     await bot.send_message(
         callback_query.from_user.id,
         text="Где будешь тренироваться?",
@@ -120,12 +122,13 @@ async def location_handler(callback_query: types.CallbackQuery, state: FSMContex
     async with state.proxy() as data:
         data["LOCATION"] = callback_query.data
     if data["LOCATION"] == "Дома":
-        inline_btn_1 = InlineKeyboardButton("1️⃣ Да", callback_data="Да")
-        inline_btn_2 = InlineKeyboardButton("2️⃣ Нет", callback_data="Нет")
+        inline_btn_1 = InlineKeyboardButton("✅ Да", callback_data="Да")
+        inline_btn_2 = InlineKeyboardButton("❌ Нет", callback_data="Нет")
         inline_kb1 = InlineKeyboardMarkup(row_width=2).row(inline_btn_1, inline_btn_2)
         await Person.next()
+        print(await state.get_state())
         await bot.send_message(
-            callback_query.from_user.id, text=f"{data['LOCATION']} ✅"
+            callback_query.from_user.id, text=f"{data['LOCATION']}"
         )
         await bot.send_message(
             callback_query.from_user.id,
@@ -135,11 +138,11 @@ async def location_handler(callback_query: types.CallbackQuery, state: FSMContex
     if data["LOCATION"] == "Зал":
         await state.update_data({"EQUIPMENT_BOOLEAN": "-", "EQUIPMENT_INFO": "-"})
         await Person.CONTRAINDICATIONS_BOOLEAN.set()
-        inline_btn_1 = InlineKeyboardButton("1️⃣ Да", callback_data="Да")
-        inline_btn_2 = InlineKeyboardButton("2️⃣ Нет", callback_data="Нет")
+        inline_btn_1 = InlineKeyboardButton("✅ Да", callback_data="Да")
+        inline_btn_2 = InlineKeyboardButton("❌ Нет", callback_data="Нет")
         inline_kb1 = InlineKeyboardMarkup(row_width=2).row(inline_btn_1, inline_btn_2)
         await bot.send_message(
-            callback_query.from_user.id, text=f"{data['LOCATION']} ✅"
+            callback_query.from_user.id, text=f"{data['LOCATION']}"
         )
         await bot.send_message(
             callback_query.from_user.id,
@@ -149,7 +152,7 @@ async def location_handler(callback_query: types.CallbackQuery, state: FSMContex
 
 
 async def equipment_bool_handler(
-    callback_query: types.CallbackQuery, state: FSMContext
+        callback_query: types.CallbackQuery, state: FSMContext
 ):
     logger.info(callback_query.data)
     async with state.proxy() as data:
@@ -157,7 +160,7 @@ async def equipment_bool_handler(
     if data["EQUIPMENT_BOOLEAN"] == "Да":
         await Person.next()
         await bot.send_message(
-            callback_query.from_user.id, text=f"{data['EQUIPMENT_BOOLEAN']} ✅"
+            callback_query.from_user.id, text=f"{data['EQUIPMENT_BOOLEAN']}"
         )
         await bot.send_message(
             callback_query.from_user.id, text="Напиши какой есть в наличии"
@@ -165,11 +168,11 @@ async def equipment_bool_handler(
     if data["EQUIPMENT_BOOLEAN"] == "Нет":
         await state.update_data({"EQUIPMENT_INFO": "-"})
         await Person.CONTRAINDICATIONS_BOOLEAN.set()
-        inline_btn_1 = InlineKeyboardButton("1️⃣ Да", callback_data="Да")
-        inline_btn_2 = InlineKeyboardButton("2️⃣ Нет", callback_data="Нет")
+        inline_btn_1 = InlineKeyboardButton("✅ Да", callback_data="Да")
+        inline_btn_2 = InlineKeyboardButton("❌ Нет", callback_data="Нет")
         inline_kb1 = InlineKeyboardMarkup(row_width=2).row(inline_btn_1, inline_btn_2)
         await bot.send_message(
-            callback_query.from_user.id, text=f"{data['EQUIPMENT_BOOLEAN']} ✅"
+            callback_query.from_user.id, text=f"{data['EQUIPMENT_BOOLEAN']}"
         )
         await bot.send_message(
             callback_query.from_user.id,
@@ -183,8 +186,8 @@ async def equipment_info_handler(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data["EQUIPMENT_INFO"] = message.text
     await Person.next()
-    inline_btn_1 = InlineKeyboardButton("1️⃣ Да", callback_data="Да")
-    inline_btn_2 = InlineKeyboardButton("2️⃣ Нет", callback_data="Нет")
+    inline_btn_1 = InlineKeyboardButton("✅ Да", callback_data="Да")
+    inline_btn_2 = InlineKeyboardButton("❌ Нет", callback_data="Нет")
     inline_kb1 = InlineKeyboardMarkup(row_width=2).row(inline_btn_1, inline_btn_2)
     await bot.send_message(
         message.chat.id, text="Имеются ли противопоказания?", reply_markup=inline_kb1
@@ -192,7 +195,7 @@ async def equipment_info_handler(message: types.Message, state: FSMContext):
 
 
 async def contraindications_handler_boolean(
-    callback_query: types.CallbackQuery, state: FSMContext
+        callback_query: types.CallbackQuery, state: FSMContext
 ):
     logger.info(callback_query.data)
     async with state.proxy() as data:
@@ -200,7 +203,7 @@ async def contraindications_handler_boolean(
     if data["CONTRAINDICATIONS_BOOLEAN"] == "Да":
         await Person.next()
         await bot.send_message(
-            callback_query.from_user.id, text=f"{data['CONTRAINDICATIONS_BOOLEAN']} ✅"
+            callback_query.from_user.id, text=f"{data['CONTRAINDICATIONS_BOOLEAN']}"
         )
         await bot.send_message(callback_query.from_user.id, text="Опиши какие")
     if data["CONTRAINDICATIONS_BOOLEAN"] == "Нет":
@@ -212,7 +215,7 @@ async def contraindications_handler_boolean(
         )
         await Person.BREAST_SIZE.set()
         await bot.send_message(
-            callback_query.from_user.id, text=f"{data['CONTRAINDICATIONS_BOOLEAN']} ✅"
+            callback_query.from_user.id, text=f"{data['CONTRAINDICATIONS_BOOLEAN']}"
         )
         await bot.send_message(
             callback_query.from_user.id,
@@ -285,7 +288,9 @@ async def check_info_handler(callback_query: types.CallbackQuery, state: FSMCont
     inline_kb_1 = InlineKeyboardMarkup().row(inline_btn_1, inline_btn_2)
     await bot.send_message(
         callback_query.from_user.id,
-        text=await info_editor(data=await state.get_data()),
+        text=f"{await info_editor(data=await state.get_data())}\n"
+             f" Если все правильно нажми \"Отправить\""
+             f" если неправильно указана информация заполни снова нажав \"Создать заново\"",
         reply_markup=inline_kb_1,
     )
 
@@ -296,13 +301,16 @@ async def send_info_handler(callback_query: types.CallbackQuery, state: FSMConte
         Cfg.CHANNEL_ID, text=await info_editor(data=await state.get_data())
     )
     await bot.send_message(
-        callback_query.from_user.id, text="Я получила твою анкету🥳\nЖди программу 🧘‍♀️"
+        callback_query.from_user.id,
+        text="Я получила твою анкету🥳\nЖди программу 🧘‍♀\nЧтобы создать новое нажми в меню кнопку \"Перезагрузить 🔄\""
     )
     await state.reset_state()
 
 
 async def rollback_info_handler(callback_query: types.CallbackQuery, state: FSMContext):
     await state.reset_state()
+    callback_query.data = 'Заполнить'
+    await Person.ACCEPT.set()
     await start_handler(callback_query, state)
 
 
@@ -313,6 +321,7 @@ async def info_editor(data: Optional[Mapping]):
         f"Рост: {data['HEIGHT']}\n"
         f"Вес: {data['WEIGHT']}\n"
         f"Цель тренировок: {data['GOAL']}\n"
+        f"Место занятий: {data['LOCATION']}\n"
         f"Наличие инвентаря: {data['EQUIPMENT_BOOLEAN']}\n"
         f"Какой инвентарь в наличии: {data['EQUIPMENT_INFO']}\n"
         f"Есть ли противопоказания: {data['CONTRAINDICATIONS_BOOLEAN']}\n"
@@ -367,8 +376,9 @@ def register_handler(dp: Dispatcher):
     dp.register_message_handler(weight_handler, state=Person.WEIGHT)
     dp.register_callback_query_handler(
         goal_handler,
-        lambda callback_query: callback_query.data
-        in ["Похудение", "Поддержание формы", "Набор массы"],
+        lambda callback_query: callback_query.data in ["Похудение",
+                                                       "Поддержание формы",
+                                                       "Набор массы"],
         state=Person.GOAL,
     )
     dp.register_callback_query_handler(
