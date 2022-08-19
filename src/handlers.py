@@ -39,7 +39,6 @@ async def name_handler(message: types.Message, state: FSMContext):
         data["PERSON_CREDS"] = message.text
         print(data)
     await Person.next()
-    print(await state.get_state())
     await bot.send_message(message.from_user.id, text="Возраст\n(число)")
 
 
