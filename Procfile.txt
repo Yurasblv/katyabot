@@ -1,1 +1,1 @@
-web : sh -c docs.sh
+web : python3 run.py
