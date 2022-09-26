@@ -327,8 +327,8 @@ async def info_editor(data: Optional[Mapping]):
         f"Какие имеются противопоказания: {data['CONTRAINDICATIONS_INFO']}\n"
         f"Замеры тела \n"
         f"- Обхват груди: {data['BREAST_SIZE']} см \n"
-        f"- Обхват груди: {data['WAIST_SIZE']} см \n"
-        f"- Обхват груди: {data['HIPS_SIZE']} см \n"
+        f"- Обхват талия: {data['WAIST_SIZE']} см \n"
+        f"- Обхват бедер: {data['HIPS_SIZE']} см \n"
     )
     return person_info
 
